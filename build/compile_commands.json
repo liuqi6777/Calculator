@@ -1,7 +1,0 @@
-[
-{
-  "directory": "C:/Users/qianx/Desktop/Calculator/build",
-  "command": "C:\\mingw64\\bin\\x86_64-w64-mingw32-g++.exe   -g -std=gnu++11 -o CMakeFiles\\calculator.dir\\main.cpp.obj -c C:\\Users\\qianx\\Desktop\\Calculator\\main.cpp",
-  "file": "C:/Users/qianx/Desktop/Calculator/main.cpp"
-}
-]
