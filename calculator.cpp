@@ -281,62 +281,6 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
     return SUCCESS;
 }
 
-// 直接计算原始表达式
-// status Calculator::__calculate(Expression &Expr, ExprItem &result)
-// {
-//     char ops[Expr.length]; // 操作数栈
-//     size_t ops_top = 0;
-//     ops[ops_top++] = '#';
-//
-//     ExprItem items[Expr.length];
-//     size_t items_top = 0;
-//
-//     for (int i = 0; i < Expr.length; i++)
-//     {
-//         if (Expr.expr[i].type != OPERATOR)
-//         {
-//             items[ops_top++] = Expr.expr[i];
-//         }
-//         else if (Expr.expr[i].type == OPERATOR)
-//         {
-//             char op = Expr.expr[i].data.op;
-//             if (ops_level(op) > ops_level(ops[ops_top - 1])) // 运算符入栈
-//             {
-//                 ops[ops_top++] = Expr.expr[i].data.op;
-//             }
-//             else if (ops_level(op) < ops_level(ops[ops_top - 1])) // 弹出栈顶操作符，弹出两个操作数，运算结果入栈
-//             {
-//                 char theta = ops[--ops_top];
-//                 ExprItem a = items[--items_top];
-//                 ExprItem b = items[--items_top];
-//                 ExprItem c;
-//                 switch (theta)
-//                 {
-//                 case '+':
-//                     c = a + b;
-//                     break;
-//                 case '-':
-//                     c = b - a;
-//                     break;
-//                 case '*':
-//                     c = a * b;
-//                     break;
-//                 case '/':
-//                     // TODO
-//                     break;
-//                 default:
-//                     return INVALID_OPERATOR;
-//                 }
-//             }
-//             else
-//             {
-//                 ops[--ops_top];
-//             }
-//         }
-//     }
-//     return SUCCESS;
-// }
-
 // -------------------------------------------------------------------------------------------------
 // 1. 输入计算器模式
 // 2. 输入表达式并计算
