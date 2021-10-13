@@ -14,20 +14,6 @@
         Expr.expr[idx].data.op = x;     \
     } while (0)
 
-Calculator::Calculator()
-{
-    // this->rawExpression = new char[MAX_LEN];
-    this->mode = BASIC_MODE;
-}
-
-Calculator::~Calculator()
-{
-    // delete[] this->rawExpression;
-    // delete[] this->thisExpression;
-    // delete[] this->lastExpression;
-    // delete[] this->lastResult;
-}
-
 status Calculator::set_mode(int mode)
 {
     switch (mode)
@@ -49,7 +35,7 @@ status Calculator::set_mode(int mode)
         printf("[INFO] Switch to the vector mode.\n");
         break;
     default:
-        printf("[INFO] Please select a valid mode.\n");
+        printf("[ERROR] Please select a valid mode.\n");
         return INVALID_MODE;
     }
     return SUCCESS;
@@ -60,24 +46,16 @@ inline static int ops_level(const char op)
 {
     switch (op)
     {
-    case '#':
-        return 0;
-    case '+':
-        return 1;
-    case '-':
-        return 1;
-    case '*':
-        return 2;
-    case '/':
-        return 2;
-    case '%':
-        return 2;
-    case '(':
-        return 9;
-    case ')':
-        return 9;
-    default:
-        return -1;
+        case '#': return 0;
+        case '+': return 1;
+        case '-': return 1;
+        case '*': return 2;
+        case '/': return 2;
+        case '%': return 2;
+        case '^': return 3;
+        case '(': return 9;
+        case ')': return 9;
+        default: return -1;
     }
 }
 
@@ -117,7 +95,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
                 break;
             else
             {
-                printf("[INFO] Invalid operator: \"%c\".\n", *str);
+                printf("[ERROR] Invalid operator: \"%c\".\n", *str);
                 return INVALID_OPERATOR;
             }
         }
@@ -127,7 +105,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
     {
         char var;
         printf("[INFO] Please input the name of the variable:\n");
-        scanf("%c", var);
+        scanf("%c", &var);
         printf("[INFO] Variable name is: %c.\n", var);
         printf("[INFO] Please input the expression:\n");
         char *str = (char *)malloc((MAX_LEN) * sizeof(char));
@@ -161,10 +139,12 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
                 str++;
             }
             else if (*str == '\0' || *str == '\n')
+            {
                 break;
+            }
             else
             {
-                printf("[INFO] Invalid operator: \"%c\".\n", *str);
+                printf("[ERROR] Invalid operator: \"%c\".\n", *str);
                 return INVALID_OPERATOR;
             }
         }
@@ -172,6 +152,47 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
 
     else if (mode == POLY_MODE)
     {
+        char var = 'x';
+        char op = '\0';
+        char *end;
+        Number num;
+        while (1)
+        {
+            Poly p;
+            char *str = (char *)malloc((MAX_LEN) * sizeof(char));
+            printf("[INFO] Please input a poly:\n");
+            scanf("%s", str);
+            while (strlen(str) > 0)
+            {
+                PolyNode pn;
+
+                p.insert(pn);
+            }
+            p.__sort_descending();
+            std::cout << p << std::endl;
+
+            infixExpr.expr[idx].type = POLY;
+            infixExpr.expr[idx].data.poly = p;
+            idx ++;
+
+            getchar();
+            printf("[INFO] Please enter an operator:\n");
+            scanf("%c", &op);
+            if (ISOPS(op))
+            {
+                PUT_OP(infixExpr, op, idx);
+                idx++;
+            }
+            else if (op == '=' || op == '#')
+            {
+                break;
+            }
+            else
+            {
+                printf("[ERROR] Invalid operator: \"%c\".\n", op);
+                return INVALID_OPERATOR;
+            }
+        }
     }
 
     else if (mode == VECTOR_MODE)
@@ -209,7 +230,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
             }
             else
             {
-                printf("[INFO] Invalid operator: \"%c\".\n", op);
+                printf("[ERROR] Invalid operator: \"%c\".\n", op);
                 return INVALID_OPERATOR;
             }
         }
@@ -217,7 +238,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
 
     else
     {
-        printf("[INFO] Please select a valid mode.\n");
+        printf("[ERROR] Please select a valid mode.\n");
         return INVALID_MODE;
     }
 
@@ -260,12 +281,11 @@ status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExp
                 }
                 top--;
                 break;
-
             case '+':
             case '-':
             case '*':
             case '/':
-                while (top > 0 && ops_level(stack[top]) >= ops_level(infixExpr.expr[i].data.op)) //栈顶高于等于当前符号
+                while (top && ops_level(stack[top-1]) >= ops_level(infixExpr.expr[i].data.op)) //栈顶高于等于当前符号
                 {
                     // 弹出
                     PUT_OP(postfixExpr, stack[--top], len);
@@ -295,6 +315,20 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
     ExprItem e[postfixExpr.length];
     ExprItem x1, x2;
     size_t top = 0;
+    if (this->mode == VARIABLE_MODE)
+    {
+        printf("[INFO] Please input the value of the variable:\n");
+        Number num;
+        scanf("%lf", &num);
+        for (size_t i = 0; i < postfixExpr.length; i++)
+        {
+            if (postfixExpr.expr[i].type == VARIABLE)
+            {
+                postfixExpr.expr[i].data.num = num;
+                postfixExpr.expr[i].type = NUMBER;
+            }
+        }
+    }
     for (size_t i = 0; i < postfixExpr.length; i++)
     {
         if (postfixExpr.expr[i].type != OPERATOR)
@@ -304,27 +338,21 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
         else
         {
             char op = postfixExpr.expr[i].data.op;
+            x1 = e[--top];
+            x2 = e[--top];
             switch (op)
             {
             case '+':
-                x1 = e[--top];
-                x2 = e[--top];
                 e[top++] = x1 + x2;
                 break;
             case '-':
-                x1 = e[--top];
-                x2 = e[--top];
                 e[top++] = x2 - x1;
                 break;
             case '*':
-                x1 = e[--top];
-                x2 = e[--top];
                 e[top++] = x1 * x2;
                 break;
             case '/':
                 // TODO: check type
-                // x1 = e[--top];
-                // x2 = e[--top];
                 // e[top++] = x1 / x2;
             default:
                 printf("[INFO] Invalid operator: \"%c\".\n", op);
@@ -336,7 +364,7 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
     return SUCCESS;
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------
 // 1. 输入计算器模式
 // 2. 输入表达式并计算
 // 3. 退出
@@ -349,15 +377,22 @@ void Calculator::run()
     printf("[3]: Polynomial Mode\n");
     printf("[4]: Vector Mode\n");
     int mode;
+    status s;
     scanf("%d", &mode);
-    set_mode(mode);
+    getchar();
+    s = set_mode(mode);
+    if (s) __exit(s);
     // input();
     Expression e, e2;
     ExprItem res;
-    __input_parse(e, this->mode);
-    __infix2postfix(e, e2);
-    __calculate(e2, res);
+    s = __input_parse(e, this->mode);
+    if (s) __exit(s);
+    s = __infix2postfix(e, e2);
+    if (s) __exit(s);
+    s = __calculate(e2, res);
+    if (s) __exit(s);
 
     printf("[RESULT] The result of the expression is: ");
     std::cout << res << std::endl;
+    __exit(SUCCESS);
 }

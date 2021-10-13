@@ -11,12 +11,11 @@
 class Calculator
 {
 public:
-    Calculator();
-    ~Calculator();
+    Calculator() : mode(BASIC_MODE) {};
+    ~Calculator() {};
 
     status input();
     status set_mode(int mode);
-
     status calculate(Expression &Expr, ExprItem &result);
 
     void run();
@@ -28,7 +27,7 @@ private:
     status __infix2postfix(Expression &infixExpr, Expression &postfixExpr);
     status __calculate(Expression &Expr, ExprItem &result);
 
-    void __exit() { exit(0); }
+    void __exit(status s) { exit(s); }
 };
 
 

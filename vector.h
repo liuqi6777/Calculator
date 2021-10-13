@@ -32,6 +32,8 @@ public:
     Number operator * (const Vector & rhs);
     Number operator [] (int index);
 
+    Vector& operator=(const Vector & rhs);
+
     double norm(); // 向量的模
     double cos(Vector & v);
 
@@ -152,6 +154,22 @@ Number Vector::operator *(const Vector & rhs)
 Number Vector::operator [](int index)
 {
     return this->array[index];
+}
+
+Vector& Vector::operator=(const Vector &rhs)
+{
+    this->size = rhs.size;
+    if (this->array != NULL)
+        delete[] this->array;
+    if (rhs.array != NULL)
+    {
+        this->array = new Number[this->size];
+        for (size_t i = 0; i < this->size; i ++)
+        {
+            this->array[i] = rhs.array[i];
+        }
+    }
+    return *this;
 }
 
 double Vector::norm()
