@@ -22,10 +22,9 @@ public:
     void run();
 
 private:
-    char *rawExpression;
     Mode mode;
 
-    status __parse(const char *raw, Expression &infixExpr, Mode mode, const char *var = "x");
+    status __input_parse(Expression &infixExpr, Mode mode);
     status __infix2postfix(Expression &infixExpr, Expression &postfixExpr);
     status __calculate(Expression &Expr, ExprItem &result);
 

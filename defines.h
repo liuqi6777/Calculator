@@ -14,6 +14,7 @@ typedef enum
     INVALID_INPUT,
     INVALID_OPERATOR,
     INVALID_MODE,
+    ILLEGAL_OPERATION,
     TYPE_ERROR,
     OUT_OF_RANGE
 } status;

@@ -11,11 +11,11 @@
 class Data
 {
 public:
+    // TODO: 所有类型统一变成字符串，解析或计算时再进行转换.
     Number num;
     Poly poly;
     Vector vec;
     operators op;
-    char var;
 
     Data() { };
     ~Data() { };
@@ -24,8 +24,7 @@ public:
         num = other.num; 
         poly = other.poly; 
         vec = other.vec; 
-        op = other.op; 
-        var = other.var;
+        op = other.op;
     }
 
     Data &operator=(const Data &other)
@@ -34,7 +33,6 @@ public:
         poly = other.poly; 
         vec = other.vec; 
         op = other.op; 
-        var = other.var;
         return *this;
     }
 

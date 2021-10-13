@@ -16,7 +16,7 @@
 
 Calculator::Calculator()
 {
-    this->rawExpression = new char[MAX_LEN];
+    // this->rawExpression = new char[MAX_LEN];
     this->mode = BASIC_MODE;
 }
 
@@ -55,18 +55,6 @@ status Calculator::set_mode(int mode)
     return SUCCESS;
 }
 
-status Calculator::input()
-{
-    printf("[INFO] Please input the expression:\n");
-    switch (this->mode)
-    {
-    case BASIC_MODE:
-        // gets(this->rawExpression);
-        scanf("%s", this->rawExpression);
-        break;
-    }
-    return SUCCESS;
-}
 
 inline static int ops_level(const char op)
 {
@@ -93,16 +81,16 @@ inline static int ops_level(const char op)
     }
 }
 
-status Calculator::__parse(const char *raw, Expression &infixExpr, Mode mode, const char *var)
+status Calculator::__input_parse(Expression &infixExpr, Mode mode)
 {
-    size_t n = strlen(raw);
-    char *str = (char *)malloc((n + 1) * sizeof(char));
-    strcpy(str, raw);
     int idx = 0;
     // printf("%s\n", str);
 
     if (mode == BASIC_MODE)
     {
+        printf("[INFO] Please input the expression:\n");
+        char *str = (char *)malloc((MAX_LEN) * sizeof(char));
+        scanf("%s", str);
         char *end;
         Number num;
         while (strlen(str) > 0)
@@ -137,7 +125,49 @@ status Calculator::__parse(const char *raw, Expression &infixExpr, Mode mode, co
 
     else if (mode == VARIABLE_MODE)
     {
-        printf("[INFO] Variable name is: %s.\n", var);
+        char var;
+        printf("[INFO] Please input the name of the variable:\n");
+        scanf("%c", var);
+        printf("[INFO] Variable name is: %c.\n", var);
+        printf("[INFO] Please input the expression:\n");
+        char *str = (char *)malloc((MAX_LEN) * sizeof(char));
+        scanf("%s", str);
+        char *end;
+        Number num;
+
+        while (strlen(str) > 0)
+        {
+            while (*str == ' ')
+                str++;
+            if (ISDIGIT(*str))
+            {
+                num = strtod(str, &end);
+                str = end;
+                PUT_NUM(infixExpr, num, idx);
+                idx++;
+                // std::cout << " *" << num << "* ";
+            }
+            else if (ISOPS(*str))
+            {
+                char op = *str;
+                PUT_OP(infixExpr, op, idx);
+                idx++;
+                str++;
+            }
+            else if (*str == var)
+            {
+                infixExpr.expr[idx].type = VARIABLE;
+                idx++;
+                str++;
+            }
+            else if (*str == '\0' || *str == '\n')
+                break;
+            else
+            {
+                printf("[INFO] Invalid operator: \"%c\".\n", *str);
+                return INVALID_OPERATOR;
+            }
+        }
     }
 
     else if (mode == POLY_MODE)
@@ -146,6 +176,43 @@ status Calculator::__parse(const char *raw, Expression &infixExpr, Mode mode, co
 
     else if (mode == VECTOR_MODE)
     {
+        char op = '\0';
+        while (1)
+        {
+            int dim = 0;
+            printf("[INFO] Please input the dimension of the vector:\n");
+            scanf("%d", &dim);
+            Vector v(dim);
+            printf("[INFO] Please input the %d elements of the vector:\n", dim);
+            for (int i = 0; i < dim; i++)
+            {
+                Number num;
+                scanf("%lf", &num);
+                v.put(i, num);
+            }
+
+            infixExpr.expr[idx].type = VECTOR;
+            infixExpr.expr[idx].data.vec = v;
+            idx ++;
+
+            getchar();
+            printf("[INFO] Please enter an operator:\n");
+            scanf("%c", &op);
+            if (ISOPS(op))
+            {
+                PUT_OP(infixExpr, op, idx);
+                idx++;
+            }
+            else if (op == '=' || op == '#')
+            {
+                break;
+            }
+            else
+            {
+                printf("[INFO] Invalid operator: \"%c\".\n", op);
+                return INVALID_OPERATOR;
+            }
+        }
     }
 
     else
@@ -160,32 +227,22 @@ status Calculator::__parse(const char *raw, Expression &infixExpr, Mode mode, co
 }
 
 // 表达式中缀转后缀
-// 要求：输入的是合法表达式；若是带变量的表达式，需要给变量赋值
 status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExpr)
 {
     // todo 内存分配
 
     char *stack = new char[infixExpr.length]; // 符号栈
-    int top = 0;                 // 栈顶下标
+    int top = 0;                  // 栈顶下标
     int len = 0;                  // 后缀表达式长度
 
     for (size_t i = 0; i < infixExpr.length; i++)
     {
 
-        if (infixExpr.expr[i].type == NUMBER)
+        if (infixExpr.expr[i].type != OPERATOR)
         {
-            postfixExpr.expr[len].data.num = infixExpr.expr[i].data.num;
-            postfixExpr.expr[len].type = NUMBER;
+            postfixExpr.expr[len].data = infixExpr.expr[i].data;
+            postfixExpr.expr[len].type = infixExpr.expr[i].type;
             len++;
-        }
-        else if (infixExpr.expr[i].type == VARIABLE)
-        {
-        }
-        else if (infixExpr.expr[i].type == POLY)
-        {
-        }
-        else if (infixExpr.expr[i].type == VECTOR)
-        {
         }
         else if (infixExpr.expr[i].type == OPERATOR)
         {
@@ -217,8 +274,6 @@ status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExp
                 // 当前符号进栈
                 stack[top++] = infixExpr.expr[i].data.op;
                 break;
-            default:
-                return INVALID_OPERATOR;
             }
         }
     }
@@ -259,7 +314,7 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
             case '-':
                 x1 = e[--top];
                 x2 = e[--top];
-                e[top++] = x1 - x2;
+                e[top++] = x2 - x1;
                 break;
             case '*':
                 x1 = e[--top];
@@ -288,7 +343,7 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
 void Calculator::run()
 {
     printf("==========================================\n");
-    printf("Please enter a number to select a mode:\n");
+    printf("[INFO] Please enter a number to select a mode:\n");
     printf("[1]: Basic Mode\n");
     printf("[2]: Variable Mode\n");
     printf("[3]: Polynomial Mode\n");
@@ -296,10 +351,10 @@ void Calculator::run()
     int mode;
     scanf("%d", &mode);
     set_mode(mode);
-    input();
+    // input();
     Expression e, e2;
     ExprItem res;
-    __parse(rawExpression, e, this->mode);
+    __input_parse(e, this->mode);
     __infix2postfix(e, e2);
     __calculate(e2, res);
 

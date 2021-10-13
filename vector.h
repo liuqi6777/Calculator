@@ -100,7 +100,11 @@ Vector& Vector::operator +(const Vector & rhs)
 {
     assert(this->array != NULL);
     assert(rhs.array != NULL);
-    assert(this->size == rhs.size);
+    if (this->size != rhs.size)
+    {
+        printf("[ERROR]\n");
+    }
+    assert(this->size != rhs.size);
 
     for (size_t i = 0; i < size; i ++)
     {
@@ -113,7 +117,11 @@ Vector& Vector::operator -(const Vector & rhs)
 {
     assert(this->array != NULL);
     assert(rhs.array != NULL);
-    assert(this->size == rhs.size);
+    if (this->size != rhs.size)
+    {
+        printf("[ERROR]\n");
+    }
+    assert(this->size != rhs.size);
 
     for (size_t i = 0; i < size; i ++)
     {
@@ -126,7 +134,11 @@ Number Vector::operator *(const Vector & rhs)
 {
     assert(this->array != NULL);
     assert(rhs.array != NULL);
-    assert(this->size == rhs.size);
+    if (this->size != rhs.size)
+    {
+        printf("[ERROR]\n");
+    }
+    assert(this->size != rhs.size);
 
     Number res;
 
