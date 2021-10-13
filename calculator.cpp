@@ -164,7 +164,40 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
             scanf("%s", str);
             while (strlen(str) > 0)
             {
-                PolyNode pn;
+                PolyNode pn = new PolyItem;
+                num = strtod(str, &end);
+                if (str != end) // get a number
+                {
+                    pn->c = num;
+                    str = end;
+                    assert(*str == '*');
+                    str ++;
+                    assert(*str == 'x');
+                }
+                else if (*str == '-' || *str == '+')
+                {
+                    pn->c = *str == '-' ? -1 : 1;
+                    str ++;
+                    assert(*str == 'x');
+                }
+                else if (*str == 'x')
+                    pn->c = 1;
+                else
+                    break;
+
+                str ++;
+                if (*str == '^')
+                {
+                    str ++;
+                    num = strtod(str, &end);
+                    pn->power = num;
+                    str = end;
+                }
+                else
+                {
+                    pn->power = 1;
+                    str ++;
+                }
 
                 p.insert(pn);
             }
@@ -178,6 +211,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
             getchar();
             printf("[INFO] Please enter an operator:\n");
             scanf("%c", &op);
+            // printf("[INFO] Input operator: '%c'\n", op);
             if (ISOPS(op))
             {
                 PUT_OP(infixExpr, op, idx);
@@ -243,6 +277,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
     }
 
     infixExpr.length = idx;
+    // printf("[INFO] The length of the expression is %d.\n", infixExpr.length);
 
     return SUCCESS;
 }
@@ -250,7 +285,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
 // 表达式中缀转后缀
 status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExpr)
 {
-    // todo 内存分配
+    printf("[INFO] Infix to postfix...");
 
     char *stack = new char[infixExpr.length]; // 符号栈
     int top = 0;                  // 栈顶下标
@@ -285,7 +320,7 @@ status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExp
             case '-':
             case '*':
             case '/':
-                while (top && ops_level(stack[top-1]) >= ops_level(infixExpr.expr[i].data.op)) //栈顶高于等于当前符号
+                while (top && stack[top-1] != '(' && ops_level(stack[top-1]) >= ops_level(infixExpr.expr[i].data.op)) //栈顶高于等于当前符号
                 {
                     // 弹出
                     PUT_OP(postfixExpr, stack[--top], len);
@@ -305,6 +340,8 @@ status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExp
     }
     postfixExpr.length = len;
     delete[] stack;
+
+    printf("Finished.\n");
 
     return SUCCESS;
 }

@@ -101,7 +101,7 @@ ExprItem &ExprItem::operator+(const ExprItem &rhs)
         data.num += rhs.data.num;
         break;
     case POLY:
-        data.poly = data.poly + rhs.data.poly;
+        data.poly + rhs.data.poly;
         break;
     case VECTOR:
         data.vec = data.vec + rhs.data.vec;
@@ -162,7 +162,7 @@ std::ostream &operator<<(std::ostream & out, ExprItem &e)
         break;
     case POLY:
         // TODO
-        // std::cout << e.data.poly;
+        out << e.data.poly;
         break;
     case VECTOR:
         out << e.data.vec;

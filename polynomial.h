@@ -40,6 +40,7 @@ public:
     Poly& operator + (const Poly & rhs);
     Poly& operator - (const Poly & rhs);
     Poly& operator * (const Poly & rhs);
+    Poly& operator = (const Poly & rhs);
 
     friend std::ostream& operator << (std::ostream& out, Poly &p);
     
@@ -63,7 +64,6 @@ Poly::Poly()
 
 Poly::Poly(char var)
 {
-    
     head = new PolyItem;
     head->next = NULL;
     this->var = var;
@@ -319,6 +319,52 @@ std::ostream& operator << (std::ostream& out, Poly &p)
 
     out << ">";
     return out;
+}
+
+Poly& Poly::operator= (const Poly &rhs)
+{
+    this->var = rhs.var;
+    head = new PolyItem;
+    PolyNode tmp, p;
+    p = this->head;
+    tmp = rhs.head;
+    p->c = tmp->c;
+    p->power = tmp->power;
+    while(tmp->next != NULL)
+    {
+        p->next = new PolyItem;
+        p = p->next;
+        tmp = tmp->next;
+        p->c = tmp->c;
+        p->power = tmp->power;
+        p->next = tmp->next;
+    }
+    return *this;
+}
+
+Poly Poly::diff(int y)
+{
+    assert(y >= 0);
+    PolyNode p;
+    p = this->head->next;
+    while (y > 0)
+    {
+        while (p != NULL)
+        {
+            if (p->power)
+            {
+                p->c *= p->power;
+                p->power -= 1;
+            }
+            else
+            {
+                p->c = 0;
+            }
+            p = p->next;
+        }
+        y --;
+    }
+    return *this;
 }
 
 status Poly::__sort_descending()
