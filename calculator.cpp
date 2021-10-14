@@ -14,8 +14,16 @@
         Expr.expr[idx].data.op = x;     \
     } while (0)
 
-status Calculator::set_mode(int mode)
+status Calculator::set_mode()
 {
+    printf("[INFO] Please enter a number to select a mode:\n");
+    printf("[1]: Basic Mode\n");
+    printf("[2]: Variable Mode\n");
+    printf("[3]: Polynomial Mode\n");
+    printf("[4]: Vector Mode\n");
+    int mode;
+    scanf("%d", &mode);
+    getchar();
     switch (mode)
     {
     case 1:
@@ -81,14 +89,12 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
                 str = end;
                 PUT_NUM(infixExpr, num, idx);
                 idx++;
-                // std::cout << " *" << num << "* ";
             }
             else if (ISOPS(*str))
             {
                 char op = *str;
                 PUT_OP(infixExpr, op, idx);
                 idx++;
-                // std::cout << "**" << *str << "**";
                 str++;
             }
             else if (*str == '\0' || *str == '\n')
@@ -320,6 +326,7 @@ status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExp
             case '-':
             case '*':
             case '/':
+            case '^':
                 while (top && stack[top-1] != '(' && ops_level(stack[top-1]) >= ops_level(infixExpr.expr[i].data.op)) //栈顶高于等于当前符号
                 {
                     // 弹出
@@ -380,19 +387,22 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
             switch (op)
             {
             case '+':
-                e[top++] = x1 + x2;
+                e[top++] = x2 + x1;
                 break;
             case '-':
                 e[top++] = x2 - x1;
                 break;
             case '*':
-                e[top++] = x1 * x2;
+                e[top++] = x2 * x1;
                 break;
             case '/':
-                // TODO: check type
-                // e[top++] = x1 / x2;
+                e[top++] = x2 / x1;
+                break;
+            case '^':
+                e[top++] = x2 ^ x1;
+                break;
             default:
-                printf("[INFO] Invalid operator: \"%c\".\n", op);
+                printf("[ERROR] Invalid operator: \"%c\".\n", op);
                 return INVALID_OPERATOR;
             }
         }
@@ -407,29 +417,26 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
 // 3. 退出
 void Calculator::run()
 {
-    printf("==========================================\n");
-    printf("[INFO] Please enter a number to select a mode:\n");
-    printf("[1]: Basic Mode\n");
-    printf("[2]: Variable Mode\n");
-    printf("[3]: Polynomial Mode\n");
-    printf("[4]: Vector Mode\n");
-    int mode;
-    status s;
-    scanf("%d", &mode);
-    getchar();
-    s = set_mode(mode);
-    if (s) __exit(s);
-    // input();
+    printf("HELLO WORLD!\n");
+
     Expression e, e2;
     ExprItem res;
+    status s;
+
+    s = set_mode();
+    if (s) __exit(s);
+
     s = __input_parse(e, this->mode);
     if (s) __exit(s);
+
     s = __infix2postfix(e, e2);
     if (s) __exit(s);
+    
     s = __calculate(e2, res);
     if (s) __exit(s);
 
     printf("[RESULT] The result of the expression is: ");
     std::cout << res << std::endl;
+    printf("BYE!\n");
     __exit(SUCCESS);
 }

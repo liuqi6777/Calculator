@@ -51,6 +51,8 @@ public:
     ExprItem &operator+(const ExprItem &rhs);
     ExprItem &operator-(const ExprItem &rhs);
     ExprItem &operator*(const ExprItem &rhs);
+    ExprItem &operator/(const ExprItem &rhs);
+    ExprItem &operator^(const ExprItem &rhs);
     ExprItem &operator=(const ExprItem &rhs);
 
     friend std::ostream &operator<<(std::ostream & out, const ExprItem &e);
@@ -145,6 +147,46 @@ ExprItem &ExprItem::operator*(const ExprItem &rhs)
     case VECTOR:
         // TODO: support vector types
         // data.vec = data.vec * rhs.data.vec;
+        break;
+    }
+    return *this;
+}
+
+ExprItem &ExprItem::operator/(const ExprItem &rhs)
+{
+    assert(type == rhs.type);
+    switch (type)
+    {
+    case NUMBER:
+        data.num /= rhs.data.num;
+        break;
+    case VARIABLE:
+        // TODO
+        break;
+    case POLY:
+    case VECTOR:
+        printf("[ERROR] Not support '^' operation.\n");
+        exit(1);
+        break;
+    }
+    return *this;
+}
+
+ExprItem &ExprItem::operator^(const ExprItem &rhs)
+{
+    assert(type == rhs.type);
+    switch (type)
+    {
+    case NUMBER:
+        data.num = pow(data.num, rhs.data.num);
+        break;
+    case VARIABLE:
+        // TODO
+        break;
+    case POLY:
+    case VECTOR:
+        printf("[ERROR] Not support '^' operation.\n");
+        exit(1);
         break;
     }
     return *this;

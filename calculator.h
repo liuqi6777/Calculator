@@ -5,7 +5,15 @@
 
 
 #define ISDIGIT(x) (x >= '0' && x <= '9')
-#define ISOPS(x) (x == '+' || x == '-' || x == '*' || x == '/' || x == '(' || x == ')' || x == '#')
+#define ISOPS(x) ( \
+    x == '+' || \
+    x == '-' || \
+    x == '*' || \
+    x == '/' || \
+    x == '^' || \
+    x == '(' || \
+    x == ')' || \
+    x == '#')
 
 
 class Calculator
@@ -15,7 +23,7 @@ public:
     ~Calculator() {};
 
     status input();
-    status set_mode(int mode);
+    status set_mode();
     status calculate(Expression &Expr, ExprItem &result);
 
     void run();
