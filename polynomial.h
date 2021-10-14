@@ -58,7 +58,7 @@ private:
 Poly::Poly()
 {
     head = new PolyItem;
-    head->next = nullptr;
+    head->next = 0x0;
     this->var = 'x';
 }
 
@@ -137,11 +137,12 @@ Poly& Poly::operator + (const Poly & rhs)
         if (p1->power == p2->power)
         {
             p1->c += p2->c;
-            if (0 && p1->c == 0)
+            if (p1->c == 0)
             {
                 PolyNode tmp = p1;
                 p1 = p1->next;
                 pre->next = p1;
+                p2 = p2->next;
                 delete tmp;
             }
             else
@@ -209,7 +210,7 @@ Poly& Poly::operator - (const Poly & rhs)
         if (p1->power == p2->power)
         {
             p1->c -= p2->c;
-            if (0 && p1->c == 0)
+            if (p1->c == 0)
             {
                 PolyNode tmp = p1;
                 p1 = p1->next;
@@ -306,14 +307,11 @@ std::ostream& operator << (std::ostream& out, Poly &p)
 
     while (tmp != NULL)
     {
-        if (tmp->c != 0)
-        {
-            if (tmp->c > 0)
-                out << '+';
-            out << tmp->c;
-            if (tmp->power)
-                out << "*" << var << "^" << tmp->power;
-        }
+        if (tmp->c > 0)
+            out << '+';
+        out << tmp->c;
+        if (tmp->power)
+            out << "*" << var << "^" << tmp->power;
         tmp = tmp->next;
     }
 
@@ -324,7 +322,8 @@ std::ostream& operator << (std::ostream& out, Poly &p)
 Poly& Poly::operator= (const Poly &rhs)
 {
     this->var = rhs.var;
-    head = new PolyItem;
+    this->head = new PolyItem;
+    this->head->next = 0x0;
     PolyNode tmp, p;
     p = this->head;
     tmp = rhs.head;

@@ -107,7 +107,7 @@ ExprItem &ExprItem::operator+(const ExprItem &rhs)
         data.poly + rhs.data.poly;
         break;
     case VECTOR:
-        data.vec = data.vec + rhs.data.vec;
+        data.vec + rhs.data.vec;
         break;
     }
     return *this;
@@ -123,10 +123,10 @@ ExprItem &ExprItem::operator-(const ExprItem &rhs)
         data.num -= rhs.data.num;
         break;
     case POLY:
-        data.poly = data.poly - rhs.data.poly;
+        data.poly - rhs.data.poly;
         break;
     case VECTOR:
-        data.vec = data.vec - rhs.data.vec;
+        data.vec - rhs.data.vec;
         break;
     }
     return *this;
@@ -134,7 +134,7 @@ ExprItem &ExprItem::operator-(const ExprItem &rhs)
 
 ExprItem &ExprItem::operator*(const ExprItem &rhs)
 {
-    assert(type == rhs.type);
+    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
     switch (type)
     {
     case NUMBER:
@@ -145,8 +145,8 @@ ExprItem &ExprItem::operator*(const ExprItem &rhs)
         data.poly = data.poly * rhs.data.poly;
         break;
     case VECTOR:
-        // TODO: support vector types
-        // data.vec = data.vec * rhs.data.vec;
+        // type = NUMBER;
+        // data.num = data.vec * rhs.data.vec;
         break;
     }
     return *this;
@@ -196,7 +196,7 @@ std::ostream &operator<<(std::ostream & out, ExprItem &e)
         out << e.data.num;
         break;
     case VARIABLE:
-        // TODO
+        out << e.data.num;
         break;
     case POLY:
         // TODO

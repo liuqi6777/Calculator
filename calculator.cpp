@@ -176,6 +176,12 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
                 {
                     pn->c = num;
                     str = end;
+                    if (strlen(str) == 0)
+                    {
+                        pn->power = 0;
+                        p.insert(pn);
+                        break;
+                    }
                     assert(*str == '*');
                     str ++;
                     assert(*str == 'x');
@@ -254,6 +260,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
 
             infixExpr.expr[idx].type = VECTOR;
             infixExpr.expr[idx].data.vec = v;
+            std::cout << infixExpr.expr[idx].data.vec << std::endl;
             idx ++;
 
             getchar();
@@ -291,7 +298,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
 // 表达式中缀转后缀
 status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExpr)
 {
-    printf("[INFO] Infix to postfix...");
+    // printf("[INFO] Infix to postfix...");
 
     char *stack = new char[infixExpr.length]; // 符号栈
     int top = 0;                  // 栈顶下标
@@ -327,6 +334,7 @@ status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExp
             case '*':
             case '/':
             case '^':
+            case '\'':
                 while (top && stack[top-1] != '(' && ops_level(stack[top-1]) >= ops_level(infixExpr.expr[i].data.op)) //栈顶高于等于当前符号
                 {
                     // 弹出
@@ -348,7 +356,7 @@ status Calculator::__infix2postfix(Expression &infixExpr, Expression &postfixExp
     postfixExpr.length = len;
     delete[] stack;
 
-    printf("Finished.\n");
+    // printf("Finished.\n");
 
     return SUCCESS;
 }
@@ -406,53 +414,58 @@ void Calculator::run()
 {
     printf("HELLO WORLD!\n");
 
-    Expression e, e2;
-    ExprItem res;
-    status s;
-
-    s = set_mode();
-    if (s) __exit(s);
-
-    s = __input_parse(e, this->mode);
-    if (s) __exit(s);
-
-    s = __infix2postfix(e, e2);
-    if (s) __exit(s);
-    
-    if (this->mode == VARIABLE_MODE)
+    do
     {
-        while(true)
-        {
-            printf("[INFO] Please input the value of the variable(enter q to quit):\n");
-            char str[20];
-            scanf("%s", str);
-            Number num;
-            if (*str == 'q')
-                break;
-            num = strtod(str, NULL);
-            for (size_t i = 0; i < e2.length; i++)
-            {
-                if (e2.expr[i].type == VARIABLE)
-                {
-                    e2.expr[i].data.num = num;
-                }
-            }
+        Expression e, e2;
+        ExprItem res;
+        status s;
 
+        s = set_mode();
+        if (s) __exit(s);
+
+        s = __input_parse(e, this->mode);
+        if (s) __exit(s);
+
+        s = __infix2postfix(e, e2);
+        if (s) __exit(s);
+        
+        if (this->mode == VARIABLE_MODE)
+        {
+            while(true)
+            {
+                printf("[INFO] Please input the value of the variable(enter q to quit):\n");
+                char str[20];
+                scanf("%s", str);
+                Number num;
+                if (*str == 'q')
+                    break;
+                num = strtod(str, NULL);
+                for (size_t i = 0; i < e2.length; i++)
+                {
+                    if (e2.expr[i].type == VARIABLE)
+                    {
+                        e2.expr[i].data.num = num;
+                    }
+                }
+
+                s = __calculate(e2, res);
+                if (s) __exit(s);
+                
+                printf("[RESULT] The result of the expression is: ");
+                std::cout << res << std::endl;
+            }
+        }
+        else
+        {
             s = __calculate(e2, res);
             if (s) __exit(s);
-            
+
             printf("[RESULT] The result of the expression is: ");
             std::cout << res << std::endl;
         }
-    }
-    else
-    {
-        s = __calculate(e2, res);
-        if (s) __exit(s);
-
-        printf("[RESULT] The result of the expression is: ");
-        std::cout << res << std::endl;
-    }
+        getchar();
+        printf("[INFO] Enter 'q' to quit.\n");
+    } while (getchar() != 'q');
     
     printf("BYE!\n");
     __exit(SUCCESS);

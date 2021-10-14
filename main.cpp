@@ -2,7 +2,8 @@
 #include "calculator.h"
 #include "calculator.cpp"
 
-int main() {
+int main()
+{
     Calculator app;
     app.run();
     return 0;
