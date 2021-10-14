@@ -162,7 +162,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
         char op = '\0';
         char *end;
         Number num;
-        while (1)
+        while (true)
         {
             Poly p;
             char *str = (char *)malloc((MAX_LEN) * sizeof(char));
@@ -238,7 +238,7 @@ status Calculator::__input_parse(Expression &infixExpr, Mode mode)
     else if (mode == VECTOR_MODE)
     {
         char op = '\0';
-        while (1)
+        while (true)
         {
             int dim = 0;
             printf("[INFO] Please input the dimension of the vector:\n");
@@ -359,20 +359,7 @@ status Calculator::__calculate(Expression &postfixExpr, ExprItem &result)
     ExprItem e[postfixExpr.length];
     ExprItem x1, x2;
     size_t top = 0;
-    if (this->mode == VARIABLE_MODE)
-    {
-        printf("[INFO] Please input the value of the variable:\n");
-        Number num;
-        scanf("%lf", &num);
-        for (size_t i = 0; i < postfixExpr.length; i++)
-        {
-            if (postfixExpr.expr[i].type == VARIABLE)
-            {
-                postfixExpr.expr[i].data.num = num;
-                postfixExpr.expr[i].type = NUMBER;
-            }
-        }
-    }
+
     for (size_t i = 0; i < postfixExpr.length; i++)
     {
         if (postfixExpr.expr[i].type != OPERATOR)
@@ -432,11 +419,41 @@ void Calculator::run()
     s = __infix2postfix(e, e2);
     if (s) __exit(s);
     
-    s = __calculate(e2, res);
-    if (s) __exit(s);
+    if (this->mode == VARIABLE_MODE)
+    {
+        while(true)
+        {
+            printf("[INFO] Please input the value of the variable(enter q to quit):\n");
+            char str[20];
+            scanf("%s", str);
+            Number num;
+            if (*str == 'q')
+                break;
+            num = strtod(str, NULL);
+            for (size_t i = 0; i < e2.length; i++)
+            {
+                if (e2.expr[i].type == VARIABLE)
+                {
+                    e2.expr[i].data.num = num;
+                }
+            }
 
-    printf("[RESULT] The result of the expression is: ");
-    std::cout << res << std::endl;
+            s = __calculate(e2, res);
+            if (s) __exit(s);
+            
+            printf("[RESULT] The result of the expression is: ");
+            std::cout << res << std::endl;
+        }
+    }
+    else
+    {
+        s = __calculate(e2, res);
+        if (s) __exit(s);
+
+        printf("[RESULT] The result of the expression is: ");
+        std::cout << res << std::endl;
+    }
+    
     printf("BYE!\n");
     __exit(SUCCESS);
 }

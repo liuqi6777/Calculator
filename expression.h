@@ -96,10 +96,11 @@ ExprItem &ExprItem::operator=(const ExprItem &rhs)
 
 ExprItem &ExprItem::operator+(const ExprItem &rhs)
 {
-    assert(type == rhs.type);
+    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
     switch (type)
     {
     case NUMBER:
+    case VARIABLE:
         data.num += rhs.data.num;
         break;
     case POLY:
@@ -114,10 +115,11 @@ ExprItem &ExprItem::operator+(const ExprItem &rhs)
 
 ExprItem &ExprItem::operator-(const ExprItem &rhs)
 {
-    assert(type == rhs.type);
+    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
     switch (type)
     {
     case NUMBER:
+    case VARIABLE:
         data.num -= rhs.data.num;
         break;
     case POLY:
@@ -136,10 +138,8 @@ ExprItem &ExprItem::operator*(const ExprItem &rhs)
     switch (type)
     {
     case NUMBER:
-        data.num *= rhs.data.num;
-        break;
     case VARIABLE:
-        // TODO
+        data.num *= rhs.data.num;
         break;
     case POLY:
         data.poly = data.poly * rhs.data.poly;
@@ -154,14 +154,12 @@ ExprItem &ExprItem::operator*(const ExprItem &rhs)
 
 ExprItem &ExprItem::operator/(const ExprItem &rhs)
 {
-    assert(type == rhs.type);
+    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
     switch (type)
     {
     case NUMBER:
-        data.num /= rhs.data.num;
-        break;
     case VARIABLE:
-        // TODO
+        data.num /= rhs.data.num;
         break;
     case POLY:
     case VECTOR:
@@ -174,14 +172,12 @@ ExprItem &ExprItem::operator/(const ExprItem &rhs)
 
 ExprItem &ExprItem::operator^(const ExprItem &rhs)
 {
-    assert(type == rhs.type);
+    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
     switch (type)
     {
     case NUMBER:
-        data.num = pow(data.num, rhs.data.num);
-        break;
     case VARIABLE:
-        // TODO
+        data.num = pow(data.num, rhs.data.num);
         break;
     case POLY:
     case VECTOR:
