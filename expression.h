@@ -1,212 +1,30 @@
 #ifndef EXPRESSION_
 #define EXPRESSION_
 
-#include "defines.h"
-#include "polynomial.h"
-#include "vector.h"
-
+#include<iostream>
+#include<string>
+#include<cmath>
 #include<assert.h>
+#include"defines.h"
 
-
-class Data
-{
-public:
-    // TODO: 所有类型统一变成字符串，解析或计算时再进行转换.
-    Number num;
-    Poly poly;
-    Vector vec;
-    operators op;
-
-    Data() { };
-    ~Data() { };
-    Data(const Data &other) 
-    { 
-        num = other.num; 
-        poly = other.poly; 
-        vec = other.vec; 
-        op = other.op;
-    }
-
-    Data &operator=(const Data &other)
-    { 
-        num = other.num; 
-        poly = other.poly; 
-        vec = other.vec; 
-        op = other.op; 
-        return *this;
-    }
-
-};
-
-const size_t MAX_LEN = 100;
-
-class ExprItem
-{
-public:
-    Data data;
-    itemType type;
-
-    ExprItem() {}
-    ExprItem(const ExprItem &rhs);
-    ExprItem &operator+(const ExprItem &rhs);
-    ExprItem &operator-(const ExprItem &rhs);
-    ExprItem &operator*(const ExprItem &rhs);
-    ExprItem &operator/(const ExprItem &rhs);
-    ExprItem &operator^(const ExprItem &rhs);
-    ExprItem &operator=(const ExprItem &rhs);
-
-    friend std::ostream &operator<<(std::ostream & out, const ExprItem &e);
-
-};
-
+using std::string;
 
 class Expression
 {
 public:
-    Expression();
-    ~Expression();
+    Expression() {}
+    Expression(const Expression& other) {};
+    ~Expression() {}
 
-    ExprItem *expr;
-    size_t length;
+    virtual status input() { return SUCCESS; };
+    virtual status output() { return SUCCESS; };
+    virtual status parse() { return SUCCESS; };
+
+    // virtual Expression& operator=(Expression &other);
+    
+    // virtual Expression& add(Expression &other);
+    // virtual Expression& sub(Expression &other);
+    // virtual Expression& mul(Expression &other);
 };
-
-Expression::Expression()
-{
-    length = MAX_LEN;
-    expr = new ExprItem[length];
-}
-
-Expression::~Expression()
-{
-    delete[] expr;
-}
-
-ExprItem::ExprItem(const ExprItem &rhs)
-{
-    type = rhs.type;
-    data = rhs.data;
-}
-
-ExprItem &ExprItem::operator=(const ExprItem &rhs)
-{
-    type = rhs.type;
-    data = rhs.data;
-    return *this;
-}
-
-ExprItem &ExprItem::operator+(const ExprItem &rhs)
-{
-    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
-    switch (type)
-    {
-    case NUMBER:
-    case VARIABLE:
-        data.num += rhs.data.num;
-        break;
-    case POLY:
-        data.poly + rhs.data.poly;
-        break;
-    case VECTOR:
-        data.vec + rhs.data.vec;
-        break;
-    }
-    return *this;
-}
-
-ExprItem &ExprItem::operator-(const ExprItem &rhs)
-{
-    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
-    switch (type)
-    {
-    case NUMBER:
-    case VARIABLE:
-        data.num -= rhs.data.num;
-        break;
-    case POLY:
-        data.poly - rhs.data.poly;
-        break;
-    case VECTOR:
-        data.vec - rhs.data.vec;
-        break;
-    }
-    return *this;
-}
-
-ExprItem &ExprItem::operator*(const ExprItem &rhs)
-{
-    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
-    switch (type)
-    {
-    case NUMBER:
-    case VARIABLE:
-        data.num *= rhs.data.num;
-        break;
-    case POLY:
-        data.poly = data.poly * rhs.data.poly;
-        break;
-    case VECTOR:
-        // type = NUMBER;
-        // data.num = data.vec * rhs.data.vec;
-        break;
-    }
-    return *this;
-}
-
-ExprItem &ExprItem::operator/(const ExprItem &rhs)
-{
-    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
-    switch (type)
-    {
-    case NUMBER:
-    case VARIABLE:
-        data.num /= rhs.data.num;
-        break;
-    case POLY:
-    case VECTOR:
-        printf("[ERROR] Not support '^' operation.\n");
-        exit(1);
-        break;
-    }
-    return *this;
-}
-
-ExprItem &ExprItem::operator^(const ExprItem &rhs)
-{
-    assert(type == rhs.type || type == VARIABLE || rhs.type == VARIABLE);
-    switch (type)
-    {
-    case NUMBER:
-    case VARIABLE:
-        data.num = pow(data.num, rhs.data.num);
-        break;
-    case POLY:
-    case VECTOR:
-        printf("[ERROR] Not support '^' operation.\n");
-        exit(1);
-        break;
-    }
-    return *this;
-}
-
-std::ostream &operator<<(std::ostream & out, ExprItem &e)
-{
-    switch (e.type)
-    {
-    case NUMBER:
-        out << e.data.num;
-        break;
-    case VARIABLE:
-        out << e.data.num;
-        break;
-    case POLY:
-        // TODO
-        out << e.data.poly;
-        break;
-    case VECTOR:
-        out << e.data.vec;
-        break;
-    }
-    return out;
-}
 
 #endif // EXPRESSION_

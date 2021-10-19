@@ -1,114 +1,152 @@
-#ifndef POLYNOMIAL
-#define POLYNOMIAL
+#ifndef POLYNOMIAL_EXPRESSION_
+#define POLYNOMIAL_EXPRESSION_
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<assert.h>
-#include<iostream>
-
-#include "defines.h"
-
+#include"expression.h"
 
 typedef struct PolyItem PolyItem;
 typedef PolyItem* PolyNode;
-typedef PolyItem* Polynomial;
 
-struct PolyItem {
+struct PolyItem
+{
     Number c;
     int power;
     PolyNode next;
 };
 
-
-class Poly
+class Polynomial : public Expression
 {
 public:
-    Poly ();
-    Poly(char var);
-    Poly(const Poly & rhs); // 深拷贝
-    ~Poly();
+    Polynomial();
+    Polynomial(const string &raw);
+    Polynomial(const Polynomial &other);
+    ~Polynomial();
 
-    status set();
-    status insert(PolyNode item);
+    status input();
+    status output();
+    status parse();
+
+    status insert(PolyNode p);
     status set_null();
+    status sort();
 
-    status add();
-    status sub();
-    status mul();
+    Polynomial& operator=(const Polynomial &other);
+    Polynomial& operator+(const Polynomial &other);
+    Polynomial& operator-(const Polynomial &other);
+    Polynomial& operator*(const Polynomial &other);
 
-    Poly& operator + (const Poly & rhs);
-    Poly& operator - (const Poly & rhs);
-    Poly& operator * (const Poly & rhs);
-    Poly& operator = (const Poly & rhs);
+    Polynomial& diff(int y);
 
-    friend std::ostream& operator << (std::ostream& out, Poly &p);
-    
-    Poly diff(int y);
-    status __sort_descending();
+    friend std::ostream &operator<<(std::ostream &out, const Polynomial &obj);
+    friend std::istream &operator>>(std::istream &in, const Polynomial &obj);
 
 private:
-
-    inline bool __cmp(const PolyNode &p1, const PolyNode &p2) {return p1->power < p2->power; }
-
-    Polynomial head;
-    char var;
+    string raw;
+    PolyNode head;
 };
 
-Poly::Poly()
+Polynomial::Polynomial()
 {
     head = new PolyItem;
+    head->c = 0;
+    head->power = 0;
     head->next = 0x0;
-    this->var = 'x';
 }
 
-Poly::Poly(char var)
+Polynomial::Polynomial(const string &raw)
 {
     head = new PolyItem;
-    head->next = NULL;
-    this->var = var;
+    head->c = 0;
+    head->power = 0;
+    head->next = 0x0;
+    this->raw = raw;
+    this->parse();
 }
 
-Poly::Poly(const Poly &rhs)
+Polynomial::Polynomial(const Polynomial &other)
 {
-    this->var = rhs.var;
     head = new PolyItem;
-    PolyNode tmp, p;
-    p = this->head;
-    tmp = rhs.head;
-    p->c = tmp->c;
-    p->power = tmp->power;
-    while(tmp->next != NULL)
-    {
-        p->next = new PolyItem;
-        p = p->next;
-        tmp = tmp->next;
-        p->c = tmp->c;
-        p->power = tmp->power;
-        p->next = tmp->next;
-    }
+    head->c = 0;
+    head->power = 0;
+    head->next = 0x0;
+    this->raw = other.raw;
+    *this = other;
 }
 
-Poly::~Poly()
+Polynomial::~Polynomial()
 {
     set_null();
 }
 
-status Poly::set()
-{
-    // TODO
+status Polynomial::input()
+{   
+    std::cout << "[INFO] Please input the polynomial:" << std::endl;
+    getline(std::cin, raw);
     return SUCCESS;
 }
 
-status Poly::insert(PolyNode item)
+status Polynomial::output()
 {
-    item->next = this->head->next;
-    this->head->next = item;
-
+    std::cout << this->raw << std::endl;
     return SUCCESS;
 }
 
-status Poly::set_null()
+status Polynomial::parse()
+{
+    string str(raw);
+    Number num;
+    size_t pos;
+    while (str.length() > 0)
+    {
+        PolyNode pn = new PolyItem;
+        if (ISDIGIT(str[0]) || (ISDIGIT(str[1]) && (str[0] == '-' || str[0] == '+'))) // get a number
+        {
+            num = stod(str, &pos);
+            pn->c = num;
+            str = str.substr(pos);
+            if (str.length() == 0)
+            {
+                pn->power = 0;
+                this->insert(pn);
+                break;
+            }
+            assert(str[0] == '*');
+            str = str.substr(1);;
+            assert(str[0] == 'x');
+        }
+        else if (str[0] == '-' || str[0] == '+')
+        {
+            pn->c = str[0] == '-' ? -1 : 1;
+            str = str.substr(1);;
+            assert(str[0] == 'x');
+        }
+        else if (str[0] == 'x')
+            pn->c = 1;
+        else
+            break;
+        str = str.substr(1);;
+        if (str[0] == '^')
+        {
+            str = str.substr(1);;
+            num = stod(str, &pos);
+            pn->power = num;
+            str = str.substr(pos);
+        }
+        else
+            pn->power = 1;
+        this->insert(pn);
+    }
+    this->sort();
+    return SUCCESS;
+}
+
+status Polynomial::insert(PolyNode p)
+{
+    p->next = this->head->next;
+    this->head->next = p;
+    return SUCCESS;
+}
+
+status Polynomial::set_null()
 {
     if (head->next != NULL)
     {
@@ -126,11 +164,57 @@ status Poly::set_null()
     return SUCCESS;
 }
 
-Poly& Poly::operator + (const Poly & rhs)
+status Polynomial::sort()
 {
-    // inplace
+    PolyNode pre, p, tail;
+    tail = NULL;
+    while (head->next != tail)
+    {
+        pre = head;
+        p = head->next;
+        while (p->next != tail)
+        {
+            if (p->power < p->next->power)
+            {
+                pre->next = p->next;
+                p->next = pre->next->next;
+                pre->next->next = p;
+            }
+            else
+                p = p->next;
+
+            pre = pre->next;
+        }
+        tail = p;
+    }
+    return SUCCESS;
+}
+
+Polynomial& Polynomial::operator=(const Polynomial &other)
+{
+    this->head = new PolyItem;
+    this->head->next = 0x0;
+    PolyNode tmp, p;
+    p = this->head;
+    tmp = other.head;
+    p->c = tmp->c;
+    p->power = tmp->power;
+    while(tmp->next != NULL)
+    {
+        p->next = new PolyItem;
+        p = p->next;
+        tmp = tmp->next;
+        p->c = tmp->c;
+        p->power = tmp->power;
+        p->next = tmp->next;
+    }
+    return *this;
+}
+
+Polynomial& Polynomial::operator+(const Polynomial &other)
+{
     PolyNode p1 = this->head->next;
-    PolyNode p2 = rhs.head->next;
+    PolyNode p2 = other.head->next;
     PolyNode pre = this->head;
     while (p1 != NULL && p2 != NULL)
     {
@@ -151,7 +235,6 @@ Poly& Poly::operator + (const Poly & rhs)
                 p2 = p2->next;
                 pre = pre->next;
             }
-            
         }
         else if (p1->power > p2->power)
         {
@@ -200,10 +283,10 @@ Poly& Poly::operator + (const Poly & rhs)
     return *this;
 }
 
-Poly& Poly::operator - (const Poly & rhs)
+Polynomial& Polynomial::operator-(const Polynomial &other)
 {
     PolyNode p1 = this->head->next;
-    PolyNode p2 = rhs.head->next;
+    PolyNode p2 = other.head->next;
     PolyNode pre = this->head;
     while (p1 != NULL && p2 != NULL)
     {
@@ -215,6 +298,7 @@ Poly& Poly::operator - (const Poly & rhs)
                 PolyNode tmp = p1;
                 p1 = p1->next;
                 pre->next = p1;
+                p2 = p2->next;
                 delete tmp;
             }
             else
@@ -271,15 +355,15 @@ Poly& Poly::operator - (const Poly & rhs)
     return *this;
 }
 
-Poly& Poly::operator * (const Poly & rhs)
+Polynomial& Polynomial::operator*(const Polynomial &other)
 {
     PolyNode p1;
-    PolyNode p2 = rhs.head->next;
-    Poly original(*this);
+    PolyNode p2 = other.head->next;
+    Polynomial original(*this);
     *this = *this - original;
     while (p2 != NULL)
     {
-        Poly tmp(original);
+        Polynomial tmp(original);
         p1 = tmp.head->next;
         while (p1 != NULL)
         {
@@ -287,61 +371,15 @@ Poly& Poly::operator * (const Poly & rhs)
             p1->power += p2->power;
             p1 = p1->next;
         }
-        std::cout << "Temp:  " << tmp << std::endl;
+        // std::cout << "[DEBUG] Temp:  " << tmp << std::endl;
         *this = *this + tmp;
-        std::cout << "Step:  " << *this << std::endl;
+        // std::cout << "[DEBIG] Step:  " << *this << std::endl;
         p2 = p2->next;
     }
     return *this;
 }
 
-std::ostream& operator << (std::ostream& out, Poly &p)
-{
-    out << "Poly<";
-    PolyNode tmp;
-    tmp = p.head->next;
-    char var = 'x'; // TODO
-
-    out << tmp->c << "*" << var << "^" << tmp->power;
-    tmp = tmp->next;
-
-    while (tmp != NULL)
-    {
-        if (tmp->c > 0)
-            out << '+';
-        out << tmp->c;
-        if (tmp->power)
-            out << "*" << var << "^" << tmp->power;
-        tmp = tmp->next;
-    }
-
-    out << ">";
-    return out;
-}
-
-Poly& Poly::operator= (const Poly &rhs)
-{
-    this->var = rhs.var;
-    this->head = new PolyItem;
-    this->head->next = 0x0;
-    PolyNode tmp, p;
-    p = this->head;
-    tmp = rhs.head;
-    p->c = tmp->c;
-    p->power = tmp->power;
-    while(tmp->next != NULL)
-    {
-        p->next = new PolyItem;
-        p = p->next;
-        tmp = tmp->next;
-        p->c = tmp->c;
-        p->power = tmp->power;
-        p->next = tmp->next;
-    }
-    return *this;
-}
-
-Poly Poly::diff(int y)
+Polynomial& Polynomial::diff(int y)
 {
     assert(y >= 0);
     PolyNode p;
@@ -366,31 +404,4 @@ Poly Poly::diff(int y)
     return *this;
 }
 
-status Poly::__sort_descending()
-{
-    PolyNode pre, p, tail;
-    tail = NULL;
-    while (head->next != tail)
-    {
-        pre = head;
-        p = head->next;
-        while (p->next != tail)
-        {
-            if (p->power < p->next->power)
-            {
-                pre->next = p->next;
-                p->next = pre->next->next;
-                pre->next->next = p;
-            }
-            else
-                p = p->next;
-
-            pre = pre->next;
-        }
-        tail = p;
-    }
-    return SUCCESS;
-}
-
-
-#endif // POLYNOMIAL
+#endif // POLYNOMIAL_EXPRESSION_

@@ -1,10 +1,9 @@
-#include <iostream>
-#include "calculator.h"
-#include "calculator.cpp"
+#include<iostream>
+#include"calculator.h"
 
 int main()
 {
-    Calculator app;
-    app.run();
+    Calculator c;
+    c.run();
     return 0;
 }

@@ -10,7 +10,6 @@ typedef enum
 {
     SUCCESS,
     ERROE,
-    OVERFLOW,
     INVALID_INPUT,
     INVALID_OPERATOR,
     INVALID_MODE,
@@ -33,7 +32,9 @@ typedef enum
     BASIC_MODE = 1,
     VARIABLE_MODE,
     POLY_MODE,
-    VECTOR_MODE
+    VECTOR_MODE,
+    MATRIX_MODE,
+    FUNCTION_MODE
 } Mode;
 
 typedef char operators;
@@ -47,5 +48,17 @@ const operators OPS[] = {
     '(',
     ')',
 };
+
+#define ISDIGIT(x) (x >= '0' && x <= '9')
+#define ISOPS(x) ( \
+    x == '+' || \
+    x == '-' || \
+    x == '*' || \
+    x == '/' || \
+    x == '^' || \
+    x == '(' || \
+    x == ')' || \
+    x == '\'' || \
+    x == '#')
 
 #endif // GLOBAL_DEFINES_H
