@@ -39,6 +39,9 @@ public:
     friend std::ostream &operator<<(std::ostream &out, const Polynomial &obj);
     friend std::istream &operator>>(std::istream &in, const Polynomial &obj);
 
+    string parse2str();
+    operator string();
+
 private:
     string raw;
     PolyNode head;
@@ -280,6 +283,7 @@ Polynomial& Polynomial::operator+(const Polynomial &other)
         p1 = p1->next;
         p2 = p2->next;
     }
+    this->raw = parse2str();
     return *this;
 }
 
@@ -352,6 +356,7 @@ Polynomial& Polynomial::operator-(const Polynomial &other)
         p1 = p1->next;
         p2 = p2->next;
     }
+    this->raw = parse2str();
     return *this;
 }
 
@@ -376,6 +381,7 @@ Polynomial& Polynomial::operator*(const Polynomial &other)
         // std::cout << "[DEBIG] Step:  " << *this << std::endl;
         p2 = p2->next;
     }
+    this->raw = parse2str();
     return *this;
 }
 
@@ -401,7 +407,40 @@ Polynomial& Polynomial::diff(int y)
         }
         y --;
     }
+    this->raw = parse2str();
     return *this;
+}
+
+string Polynomial::parse2str()
+{
+    PolyNode tmp;
+    tmp = this->head->next;
+    string str = "";
+    if (tmp == NULL)
+        return str;
+    str += std::to_string(tmp->c);
+    str += "*x^";
+    str += std::to_string(tmp->power);
+    tmp = tmp->next;
+
+    while (tmp != NULL)
+    {
+        if (tmp->c > 0)
+            str += "+";
+        str += std::to_string(tmp->c);
+        if (tmp->power)
+        {
+            str += "*x^";
+            str += std::to_string(tmp->power);
+        }
+        tmp = tmp->next;
+    }
+    return str;
+}
+
+Polynomial::operator string()
+{
+    return this->raw;
 }
 
 #endif // POLYNOMIAL_EXPRESSION_
