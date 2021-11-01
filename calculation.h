@@ -99,7 +99,11 @@ Number Calculation::parse(string str)
     Number num;
     while (str.length() > 0)
     {
-        if (ISDIGIT(str[0]))
+        if (std::isspace(str[0]))
+        {
+            str = str.substr(1);
+        }
+        if (ISDIGIT(str[0]) || (str[0] == '-' && (idx == 0 || infix[idx-1][0] == '(')))
         {
             num = stod(str, &pos);
             infix[idx++] = str.substr(0, pos);
@@ -126,7 +130,7 @@ Number Calculation::parse(string str)
 
     for (size_t i = 0; i < infix_len; i++)
     {
-        if (ISDIGIT(infix[i][0])) // num
+        if (ISDIGIT(infix[i][0]) || (infix[i][0] == '-' && infix[i].length() > 1)) // num
         {
             postfix[idx++] = infix[i];
         }
@@ -174,7 +178,7 @@ Number Calculation::parse(string str)
 
     for (size_t i = 0; i < postfix_len; i++)
     {
-        if (ISDIGIT(postfix[i][0]))
+        if (ISDIGIT(postfix[i][0]) || (postfix[i][0] == '-' && postfix[i].length() > 1))
         {
             nums[top++] = stod(postfix[i], &pos);;
         }
