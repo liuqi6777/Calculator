@@ -33,11 +33,11 @@ public:
 
     friend Matrix operator/(const Matrix &, double);
 
-    size_t row() const { return m_row; }
-    size_t col() const { return n_col; }
+    size_t row() const { return m_row; } // 行数
+    size_t col() const { return n_col; } // 列数
 
-    Matrix get_row(size_t index);
-    Matrix get_col(size_t index);
+    Matrix get_row(size_t index); // 返回某一行
+    Matrix get_col(size_t index); // 返回某一列
 
     Matrix cov(bool flag = true); // 协方差阵
     double det();                 // 行列式
@@ -266,7 +266,7 @@ double Matrix::det()
         return calcDet(m_row, data);
     else
     {
-        std::cout << ("行列不相等无法计算") << std::endl;
+        printf("[ERROR] Not a square matrix.\n");
         return 0;
     }
 }
@@ -290,8 +290,8 @@ Matrix operator+(const Matrix &lm, const Matrix &rm)
     {
         Matrix temp(0, 0);
         temp.data = NULL;
-        std::cout << "operator+(): 矩阵shape 不合适,n_col:"
-                  << lm.n_col << "," << rm.n_col << ".  m_row:" << lm.m_row << ", " << rm.m_row << std::endl;
+        printf("[ERROR] The shapes of two matrix are not equal. A: (%d, %d), B: (%d, %d).\n",
+            lm.m_row, lm.n_col, rm.m_row, rm.n_col);
         return temp; //数据不合法时候，返回空矩阵
     }
     Matrix ret(lm.m_row, lm.n_col);
@@ -308,8 +308,8 @@ Matrix operator-(const Matrix &lm, const Matrix &rm)
     {
         Matrix temp(0, 0);
         temp.data = NULL;
-        std::cout << "operator-(): 矩阵shape 不合适,n_col:"
-                  << lm.n_col << "," << rm.n_col << ".  m_row:" << lm.m_row << ", " << rm.m_row << std::endl;
+        printf("[ERROR] The shapes of two matrix are not equal. A: (%d, %d), B: (%d, %d).\n",
+            lm.m_row, lm.n_col, rm.m_row, rm.n_col);
         return temp; //数据不合法时候，返回空矩阵
     }
     Matrix ret(lm.m_row, lm.n_col);
@@ -326,8 +326,8 @@ Matrix operator*(const Matrix &lm, const Matrix &rm)
     {
         Matrix temp(0, 0);
         temp.data = NULL;
-        std::cout << "operator*(): 矩阵shape 不合适,n_col:"
-                  << lm.n_col << "," << rm.n_col << ".  m_row:" << lm.m_row << ", " << rm.m_row << std::endl;
+        printf("[ERROR] The shapes of two matrix are not equal. A: (%d, %d), B: (%d, %d).\n",
+            lm.m_row, lm.n_col, rm.m_row, rm.n_col);
         return temp; //数据不合法时候，返回空矩阵
     }
     Matrix ret(lm.m_row, rm.n_col);
@@ -367,7 +367,7 @@ Matrix Matrix::diag()
     if (m_row != n_col)
     {
         Matrix m(0);
-        std::cout << "diag():m_row != n_col" << std::endl;
+        printf("[ERROR] Not a square matrix.\n");
         return m;
     }
     Matrix m(1, m_row);
@@ -396,7 +396,7 @@ void Matrix::QR(Matrix &Q, Matrix &R) const
     //如果A不是一个二维方阵，则提示错误，函数计算结束
     if (m_row != n_col)
     {
-        printf("ERROE: QR() parameter A is not a square matrix!\n");
+        printf("[ERROE] Not a square matrix.\n");
         return;
     }
     const size_t N = m_row;
@@ -441,18 +441,24 @@ void Matrix::QR(Matrix &Q, Matrix &R) const
 
 Matrix Matrix::eig_val(size_t _iters)
 {
-    if (size == 0 || m_row != n_col)
+    if (size == 0)
     {
-        std::cout << "矩阵为空或者非方阵！" << std::endl;
+        printf("[ERROR] The matrix is NULL.\n");
         Matrix rets(0);
         return rets;
     }
-    if (det() == 0)
+    if (m_row != n_col)
     {
-     std::cout << "非满秩矩阵没法用QR分解计算特征值！" << std::endl;
-     Matrix rets(0);
-     return rets;
+        printf("[ERROR] Not a square matrix.\n");
+        Matrix rets(0);
+        return rets;
     }
+    // if (det() == 0)
+    // {
+    //  std::cout << "非满秩矩阵没法用QR分解计算特征值！" << std::endl;
+    //  Matrix rets(0);
+    //  return rets;
+    // }
     const size_t N = m_row;
     Matrix matcopy(*this); //备份矩阵
     Matrix Q(N), R(N);
@@ -472,18 +478,24 @@ Matrix Matrix::eig_val(size_t _iters)
 
 Matrix Matrix::eig_vect(size_t _iters)
 {
-    if (size == 0 || m_row != n_col)
+    if (size == 0)
     {
-        std::cout << "矩阵为空或者非方阵！" << std::endl;
+        printf("[ERROR] The matrix is NULL.\n");
         Matrix rets(0);
         return rets;
     }
-    if (det() == 0)
+    if (m_row != n_col)
     {
-        std::cout << "非满秩矩阵没法用QR分解计算特征向量！" << std::endl;
+        printf("[ERROR] Not a square matrix.\n");
         Matrix rets(0);
         return rets;
     }
+    // if (det() == 0)
+    // {
+    //     std::cout << "非满秩矩阵没法用QR分解计算特征向量！" << std::endl;
+    //     Matrix rets(0);
+    //     return rets;
+    // }
     Matrix matcopy(*this); //备份矩阵
     Matrix eigenValue = eig_val(_iters);
     Matrix ret(m_row);
@@ -616,7 +628,7 @@ Matrix Matrix::inverse()
     double detOfMat = det();
     if (detOfMat == 0)
     {
-        std::cout << "行列式为0，不能计算逆矩阵。" << std::endl;
+        printf("[ERROR] Can't calculate the inverse matrix as det is 0.\n");
         return Matrix(0);
     }
     return adjoint() / detOfMat;
