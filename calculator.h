@@ -26,7 +26,7 @@ private:
 
     Expression history[MAX_STORAGE_HISTORY_NUMBER];
     Function funcs[MAX_STORAGE_HISTORY_NUMBER];
-    size_t fun_num = 0;
+    size_t funcs_count = 0;
 };
 
 status Calculator::set_mode()
@@ -87,15 +87,18 @@ void Calculator::run()
 
         if (mode == BASIC_MODE)
         {
-            Calculation c;
-            c.input();
-            c.parse();
-            c.output();
+            Calculation e;
+            e.input();
+            e.parse();
+            e.output();
         }
 
         else if (mode == VARIABLE_MODE)
         {
-
+            VariableExpression e;
+            e.input();
+            e.set_var_value(0);
+            e.output();
         }
 
         else if (mode == POLY_MODE)
@@ -124,28 +127,43 @@ void Calculator::run()
                 if (str.substr(0, 3) == "DEF")
                 {
                     int pos = str.find_first_of('=');
-                    Function f(str.substr(pos+1));
-                    string vn = "";
-                    vn += str[str.find_first_of('(') + 1];
-                    f.set_var_name(vn);
 
-                    string n = "";
-                    n += str[str.find_first_of('(') - 1];
-                    // std::cout << n <<  std::endl;
-                    f.set_func_name(n);
-                    // std::cout << f.get_func_name() << std::endl;
+                    string var_name(1, str[str.find_first_of('(') + 1]);
+                    string func_name(1, str[str.find_first_of('(') - 1]);
+                    str = str.substr(pos+1);
+                    
+                    string func_in = "("; func_in += var_name; func_in += ')'; 
+                    while ((pos = str.find(func_in)) != string::npos)
+                    {
+                        string func_in_name(1, str[pos-1]);
+                        for (int i = 0; i < funcs_count; i++)
+                        {
+                            if (func_in_name == funcs[i].get_func_name())
+                            {
+                                string expr;
+                                expr.push_back('(');
+                                expr += funcs[i].get_func();
+                                expr.push_back(')');
+                                str.replace(pos-1, 4, expr);
+                                while((pos = str.find(funcs[i].get_var_name())) != string::npos)
+                                    str.replace(pos, 1, var_name);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    Function f(str);
+                    f.set_var_name(var_name);
+                    f.set_func_name(func_name);
 
-                    funcs[fun_num ++] = f;
+                    funcs[funcs_count ++] = f;
                 }
                 else if (str.substr(0, 3) == "RUN")
                 {
-                    string func_name = "";
-                    func_name += str[str.find_first_of('(') - 1];
-                    // std::cout << func_name << std::endl;
-                    for (int i = 0; i < fun_num; i ++)
+                    string func_name(1, str[str.find_first_of('(') - 1]);
+                    for (int i = 0; i < funcs_count; i ++)
                     {
-                        // std::cout << funcs[i].get_func_name() << std::endl;
-                        if (func_name == (funcs[i]).get_func_name())
+                        if (func_name == funcs[i].get_func_name())
                         {
                             Function f(funcs[i]);
                             f.parse_var_value(str);
@@ -159,7 +177,6 @@ void Calculator::run()
                 {
                     printf("[ERROR] \n");
                 }
-                // getchar();
                 printf("[INFO] Enter 'q' to quit Function Mode.\n");
             } while(getchar() != 'q');
 
