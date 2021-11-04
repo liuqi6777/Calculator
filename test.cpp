@@ -88,13 +88,19 @@ static void test_polynomial()
 #define TEST_FUNCTION(expect, expression, value) \
     do { \
         Function f(expression); \
+        EXPECT_EQ_INT(SUCCESS, f.set_var_name("x")); \
         EXPECT_EQ_INT(SUCCESS, f.parse_var_value(value)); \
         EXPECT_EQ_DOUBLE(expect, f.get_value()); \
     } while(0)
 
 static void test_function()
 {
-    TEST_FUNCTION(7, "f(x)=x*2+1", "f(3)");
+    // TEST_FUNCTION(7, "f(x)=x*2+1", "f(3)");
+}
+
+static void test_matrix()
+{
+
 }
 
 static void test_access()
@@ -102,6 +108,8 @@ static void test_access()
     test_calculation();
     test_variable_expression();
     test_polynomial();
+    test_function();
+    test_matrix();
 }
 
 int main(int argc, char *argv[])

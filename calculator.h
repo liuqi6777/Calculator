@@ -96,9 +96,21 @@ void Calculator::run()
         else if (mode == VARIABLE_MODE)
         {
             VariableExpression e;
+            printf("[INFO] Please input the variable's name.\n");
+            string name;
+            std::getline(std::cin, name);
             e.input();
-            e.set_var_value(0);
-            e.output();
+            e.set_var_name(name);
+            Number n;
+            do
+            {
+                printf("[INFO] Please input the value of x.\n");
+                scanf("%lf", &n);
+                getchar();
+                e.set_var_value(n);
+                e.output();
+                printf("[INFO] Enter 'q' to quit Variable Mode.\n");
+            } while (getchar() != 'q');
         }
 
         else if (mode == POLY_MODE)
@@ -145,8 +157,9 @@ void Calculator::run()
                                 expr += funcs[i].get_func();
                                 expr.push_back(')');
                                 str.replace(pos-1, 4, expr);
-                                while((pos = str.find(funcs[i].get_var_name())) != string::npos)
-                                    str.replace(pos, 1, var_name);
+                                if (funcs[i].get_var_name() != var_name)
+                                    while((pos = str.find(funcs[i].get_var_name())) != string::npos)
+                                        str.replace(pos, 1, var_name);
                                 break;
                             }
                         }
@@ -175,7 +188,7 @@ void Calculator::run()
                 }
                 else
                 {
-                    printf("[ERROR] \n");
+                    printf("[ERROR] Invalid operation.\n");
                 }
                 printf("[INFO] Enter 'q' to quit Function Mode.\n");
             } while(getchar() != 'q');
