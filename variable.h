@@ -23,11 +23,6 @@ public:
 
     status replace(string &str, string _old, string _new="");
 
-    VariableExpression& operator=(const VariableExpression &other);
-    VariableExpression operator+(const VariableExpression &other);
-    VariableExpression operator-(const VariableExpression &other);
-    VariableExpression operator*(const VariableExpression &other);
-
     friend std::ostream& operator<<(std::ostream &out, VariableExpression &obj);
     friend std::istream& operator>>(std::istream &in, VariableExpression &obj);
 
@@ -120,30 +115,6 @@ VariableExpression& VariableExpression::operator=(const VariableExpression &othe
     this->var_name = other.var_name;
     this->var_value = other.var_value;
     return *this;
-}
-
-VariableExpression VariableExpression::operator+(const VariableExpression &other)
-{
-    VariableExpression res;
-    res.value = other.value + this->value;
-    res.raw = std::to_string(res.value);
-    return res;
-}
-
-VariableExpression VariableExpression::operator-(const VariableExpression &other)
-{
-    VariableExpression res;
-    res.value = other.value + this->value;
-    res.raw = std::to_string(res.value);
-    return res;
-}
-
-VariableExpression VariableExpression::operator*(const VariableExpression &other)
-{
-    VariableExpression res;
-    res.value = other.value + this->value;
-    res.raw = std::to_string(res.value);
-    return res;
 }
 
 #endif // VARIABLE_EXPRESSION_

@@ -19,9 +19,6 @@ public:
     Number get_value() const;
 
     Calculation& operator=(const Calculation &other);
-    Calculation operator+(const Calculation &other);
-    Calculation operator-(const Calculation &other);
-    Calculation operator*(const Calculation &other);
 
     friend std::ostream& operator<<(std::ostream &out, Calculation &obj);
     friend std::istream& operator>>(std::istream &in, Calculation &obj);
@@ -224,30 +221,6 @@ Calculation& Calculation::operator=(const Calculation &other)
     this->raw = other.raw;
     this->value = other.value;
     return *this;
-}
-
-Calculation Calculation::operator+(const Calculation &other)
-{
-    Calculation res;
-    res.value = other.value + this->value;
-    res.raw = std::to_string(res.value);
-    return res;
-}
-
-Calculation Calculation::operator-(const Calculation &other)
-{
-    Calculation res;
-    res.value = other.value + this->value;
-    res.raw = std::to_string(res.value);
-    return res;
-}
-
-Calculation Calculation::operator*(const Calculation &other)
-{
-    Calculation res;
-    res.value = other.value + this->value;
-    res.raw = std::to_string(res.value);
-    return res;
 }
 
 #endif // CALCULATION_EXPRESSION_

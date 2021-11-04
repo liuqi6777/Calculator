@@ -20,15 +20,6 @@ typedef enum
 
 typedef enum
 {
-    OPERATOR,
-    NUMBER,
-    VARIABLE,
-    POLY,
-    VECTOR,
-} itemType;
-
-typedef enum
-{
     BASIC_MODE = 1,
     VARIABLE_MODE,
     POLY_MODE,
@@ -36,18 +27,6 @@ typedef enum
     MATRIX_MODE,
     FUNCTION_MODE
 } Mode;
-
-typedef char operators;
-
-const operators OPS[] = {
-    '#',
-    '+',
-    '-',
-    '*',
-    '/',
-    '(',
-    ')',
-};
 
 #define ISDIGIT(x) (x >= '0' && x <= '9')
 #define ISOPS(x) ( \

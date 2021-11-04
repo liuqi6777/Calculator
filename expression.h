@@ -19,12 +19,6 @@ public:
     virtual status input() { return SUCCESS; };
     virtual status output() { return SUCCESS; };
     virtual status parse() { return SUCCESS; };
-
-    // virtual Expression& operator=(Expression &other);
-    
-    // virtual Expression& add(Expression &other);
-    // virtual Expression& sub(Expression &other);
-    // virtual Expression& mul(Expression &other);
 };
 
 #endif // EXPRESSION_
