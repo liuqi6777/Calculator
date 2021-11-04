@@ -1,7 +1,5 @@
 # 可编程计算器
 
-**刘琦     2020201613**
-
 ## 一、需求分析
 
 1. 实现一个具有交互界面的计算器，可以完成不同的数据处理或计算要求。
@@ -12,301 +10,15 @@
 6. 定义并运行简单函数。
 7. 矩阵运算，包括加、减、乘、转制、特征值、行列式的值等矩阵基本运算，输出结果。
 
-## 二、概要设计
-
-### 0 开发环境
+## 二、开发环境
 
 本项目在 Windows 系统下开发使用 c++ 语言开发，使用 CMake 生成项目。
 
-### 1 设计思路
+## 三、设计思路
 
 考虑到简单表达式、单变量表达式、函数具有一定的相似性、在解析字符串的过程中也可以一定程度上复用代码，因此采用了继承的方式。而向量和矩阵的功能独立实现。最后将这些相对独立的功能统一集成到计算器类 ```Calculator``` 中。
 
-## 三、详细设计
-
-首先在```defines.c```文件中进行一些全局的宏定义如下：
-
-```c++
-typedef enum
-{
-    SUCCESS,
-    ERROE,
-    INVALID_INPUT,
-    INVALID_OPERATOR,
-    INVALID_MODE,
-    ILLEGAL_OPERATION,
-    TYPE_ERROR,
-    OUT_OF_RANGE
-} status;
-
-typedef enum
-{
-    BASIC_MODE = 1,
-    VARIABLE_MODE,
-    POLY_MODE,
-    VECTOR_MODE,
-    MATRIX_MODE,
-    FUNCTION_MODE
-} Mode;
-```
-
-UML类图如下：
-
-```mermaid
-classDiagram
-	Expression <|-- Calculation
-	Calculation <|-- VariableExpression
-	Expression <|-- Polynomial
-	Calculation <|-- Function
-	Calculator *-- Vector
-	Calculator *-- Expression
-	Calculator *-- Matrix
-```
-
-各部分类以及成员函数的定义的代码如下：
-
-### 0 表达式虚基类
-
-```c++
-class Expression
-{
-public:
-    Expression() {}
-    Expression(const Expression& other) {}
-    ~Expression() {}
-    virtual status input() { return SUCCESS; };
-    virtual status output() { return SUCCESS; };
-    virtual status parse() { return SUCCESS; };
-};
-```
-
-### 1 简单表达式
-
-```c++
-class Calculation : public Expression 
-{
-public:
-    Calculation();
-    Calculation(const string &raw);
-    Calculation(const Calculation &other);
-    ~Calculation();
-    status input();				// 完成表达式的输入
-    status output();			// 输出结果
-    status parse();				// 解析并运算表达式，将结果存储在 value 中
-    Number parse(string str);	// 直接解析并运算表达式，返回结果
-    Number get_value() const;	// 返回存储的上一次运算的结果
-    Calculation& operator=(const Calculation &other);
-    friend std::ostream& operator<<(std::ostream &out, Calculation &obj);
-    friend std::istream& operator>>(std::istream &in, Calculation &obj);
-private:
-    string raw;
-    Number value;
-};
-```
-
-### 2 单变量表达式
-
-```c++
-class VariableExpression : public Calculation
-{
-public:
-    VariableExpression();
-    VariableExpression(const string &raw);
-    VariableExpression(const VariableExpression &other);
-    ~VariableExpression();
-	status input();						// 完成表达式的输入
-    status output();					// 输出结果
-    status parse();						// 解析并运算表达式，将结果存储在 value 中
-    status set_var_name(string name);	// 设置变量名
-    status set_var_value(Number value);	// 设置变量值
-    Number get_var_value();				// 返回变量值
-    Number get_value() const;			// 返回存储的上一次运算的结果
-    status replace(string &str, string _old, string _new="");
-    VariableExpression& operator=(const VariableExpression &other);
-    friend std::ostream& operator<<(std::ostream &out, VariableExpression &obj);
-    friend std::istream& operator>>(std::istream &in, VariableExpression &obj);
-private:
-    string raw;
-    string var_name;
-    Number var_value;
-    Number value;
-};
-```
-
-### 3 向量
-
-```c++
-class Vector
-{
-public:
-    Vector(size_t n);
-    Vector(const Vector &other);
-    ~Vector();
-    status input();
-    status from_str(string raw);
-    Vector& operator=(const Vector &other);
-    Vector& operator+(const Vector &other);
-    Vector& operator-(const Vector &other);
-    Number operator*(const Vector &other);
-    friend std::istream& operator>>(std::istream &in, Vector &obj);
-private:
-    Number *data;
-    size_t size;
-};
-```
-
-### 4 多项式
-
-```c++
-typedef struct PolyItem PolyItem;
-typedef PolyItem* PolyNode;
-
-struct PolyItem
-{
-    Number c;
-    int power;
-    PolyNode next;
-};
-
-class Polynomial : public Expression
-{
-public:
-    Polynomial();
-    Polynomial(const string &raw);
-    Polynomial(const Polynomial &other);
-    ~Polynomial();
-    status input();
-    status output();
-    status parse();					// 解析字符串，存储到链表实现的多项式中
-    status insert(PolyNode p);		// 在头结点处插入一个新结点
-    status set_null();				// 将多项式置为空并释放内存，在析构函数和赋值操作中使用
-    status sort();					// 将多项式按次数从高到低排序
-    Polynomial& operator=(const Polynomial &other);
-    Polynomial& operator+(const Polynomial &other);
-    Polynomial& operator-(const Polynomial &other);
-    Polynomial& operator*(const Polynomial &other);
-    Polynomial& diff(int y);		// 多项式求导
-    friend std::ostream &operator<<(std::ostream &out, const Polynomial &obj);
-    friend std::istream &operator>>(std::istream &in, const Polynomial &obj);
-    string parse2str();				// 将存储的多项式输出成字符串形式
-    operator string();
-private:
-    string raw;
-    PolyNode head;
-};
-```
-
-### 5 矩阵
-
-```c++
-class Matrix
-{
-public:
-    Matrix(size_t r, size_t c);             // 非方阵构造
-    Matrix(size_t r, size_t c, double val); // 赋初值val
-    Matrix(size_t n);                       // 方阵构造
-    Matrix(const Matrix &rhs);
-    ~Matrix();
-    status input();							// 接受输入字符串，将其存储为矩阵
-    status from_str(string str);			// 解析字符串，将其存储为矩阵
-    void set_value(double val, size_t i, size_t j);
-    double *operator[](size_t i);
-    Matrix &operator=(const Matrix &);
-    friend std::ostream &operator<<(std::ostream &out, Matrix &obj);
-    friend Matrix operator+(const Matrix &, const Matrix &);
-    friend Matrix operator-(const Matrix &, const Matrix &);
-    friend Matrix operator*(const Matrix &, const Matrix &);
-    friend Matrix operator*(double, const Matrix &);
-    friend Matrix operator*(const Matrix &, double);
-    friend Matrix operator/(const Matrix &, double);
-    size_t row(); const						// 返回矩阵的行数
-    size_t col(); const 					// 返回矩阵的列数
-    Matrix get_row(size_t index); 			// 返回某一行
-    Matrix get_col(size_t index); 			// 返回某一列
-    Matrix cov(bool flag = true); 			// 协方差阵
-    double det();                 			// 行列式
-    Matrix diag();                			// 返回对角线元素
-    Matrix T() const; 						// 转置
-    Matrix adjoint(); 						// 伴随阵
-    Matrix inverse(); 						// 逆矩阵
-    void QR(Matrix &Q, Matrix &R) const;
-    Matrix eig_val(size_t _iters = 1000);  	// 特征值
-    Matrix eig_vect(size_t _iters = 1000); 	// 特征向量
-private:
-    size_t m_row;							// 行数
-    size_t n_col;							// 列数
-    size_t size;
-    size_t m_curIndex;
-    double *data;
-};
-```
-
-### 6 函数
-
-```c++
-class Function : public Calculation
-{
-public:
-    Function();
-    Function(const string &raw);
-    Function(const Function &other);
-    ~Function();
-    status input();
-    status output();
-    status parse();							// 解析表示函数的字符串
-    string get_func();						// 返回整个函数的表达式
-    status set_func_name(string name);		// 设置函数名
-    string get_func_name();					// 返回函数名
-    status set_var_name(string name);		// 设置函数的变量名
-    string get_var_name();					// 返回函数的变量名
-    status set_var_value(Number value);		// 设置变量的值
-    Number get_var_value();					// 返回目前存储的变量的值
-    status parse_var_value(string expr);	// 计算输入变量的值后函数表达式的值
-    Number get_value() const;				// 返回上一次运行结果
-    status replace(string &str, string _old, string _new="");
-    Function& operator=(const Function &other);
-    friend std::ostream& operator<<(std::ostream &out, Function &obj);
-    friend std::istream& operator>>(std::istream &in, Function &obj);
-private:
-    string raw;
-    string var_name;
-    string func_name;
-    Number var_value;
-    Number value;
-};
-```
-
-### 7 计算器
-
-```c++
-class Calculator
-{
-public:
-    Calculator() : mode(BASIC_MODE) {};
-    ~Calculator() {}
-    void run();		// 这是一个过于臃肿的函数，里面承载了很多它不应该承载的功能,
-    				// 应该拆分出来放到各个模块中。
-    status set_mode();
-private:
-    Mode mode;	// 此时计算器的运行模式
-    Expression history[MAX_STORAGE_HISTORY_NUMBER];	// 历史运行结果
-    Function funcs[MAX_STORAGE_HISTORY_NUMBER];		// 历史定义的函数
-    size_t funcs_count = 0;
-};
-```
-
-## 四、调试分析
-
-在实现的过程中，遇到的几个主要问题如下：
-
-1. 类中成员变量需要动态分配内存时，必须手动实现构造函数！！！如果需要赋值，同样需要手动重构 ```=``` 运算符和拷贝构造函数。此外，在链表的拷贝赋值中，还需要注意，每个结点都需要深拷贝一遍。
-2. 解析运算表达式的过程中，有可能遇到一个负数的情况。如果简单地每次都把 ```-``` 识别成操作符，此时就可能出错，需要判断到底表示是一个负数还是操作符。
-3. 多项式运算过程中，有时需要合并同类项，涉及到对两个链表当前访问结点的项的次数的大小比较，从而判断哪个链表需要访问下一结点。
-4. 多项式运算过程中，可能遇到某一项系数经运算后为 0 的情况。此时需要作出判断，并在链表中删除该结点。
-5. 函数的定义中，有可能遇到到嵌套的定义，但变量名不相同的情况，例如 ```f(x)=x+1; g(y)=2*f(y)``` 。由于我的实现方式比较暴力，是通过子串匹配和替换的方式进行的，因此还需要做一定的判断和替换。虽然很不优雅，但确实work。
-6. 有时遇到一些空格输入非法的问题，需要对空白符进行处理。
-
-## 五、用户手册
+## 四、用户手册
 
 ### 00 默认说明
 
@@ -447,7 +159,7 @@ Ouput:
 
 在某种模式进行一系列输入和操作，并且输出结果后，程序会进行是否退出程序的提示。此时输入其他字符可以重新选择计算模式，输入 ```q``` 可以退出程序，屏幕上显示 ```BYE!``` 并退出。
 
-## 六、测试报告
+## 五、单元测试
 
 在本次实验中，实现了独立的单元测试部分，详细代码位于```test.cpp```文件中。采用宏定义的方式实现了对计算器的每一个功能的单元测试，并能够给出单元测试的通过率，以及使用 ```stderr``` 和 ```__LINE__``` ，能够具体定位到未通过测试的代码的行数。
 
@@ -479,7 +191,7 @@ static void test_polynomial()
 
 以上测试数据运算结果正确，和手动利用计算器的计算结果一致。
 
-## 七、附录
+## 六、附录
 
 ### 1 源程序文件名清单：
 

@@ -1,4 +1,5 @@
 build/
 .vscode/
-report.md
+*.pdf
+实验报告.md
 version-0.1.0/
