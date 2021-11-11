@@ -21,6 +21,8 @@ public:
     Number get_var_value();
     Number get_value() const;
 
+    VariableExpression& operator=(const VariableExpression &other);
+
     status replace(string &str, string _old, string _new="");
 
     friend std::ostream& operator<<(std::ostream &out, VariableExpression &obj);
@@ -47,6 +49,8 @@ VariableExpression::VariableExpression(const VariableExpression &other)
 {
     this->raw = other.raw;
     this->value = other.value;
+    this->var_name = other.var_name;
+    this->var_value = other.var_value;
 }
 
 VariableExpression::~VariableExpression()
